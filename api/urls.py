@@ -13,9 +13,6 @@ urlpatterns = [
     # Upload imagem
     path('array/createImage', views.uploadImage),
 
-    # Upload imagem
-    path('array/createImage2', views.uploadImage4),
-
     # Apagar tudo
     path('array/deleteall', views.deleteAll),
 

@@ -1,16 +1,11 @@
-from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.utils import json
 
 from . serializers import NoteSerializer
 from .models import array
 from PIL import Image, ImageOps
 import numpy as np
 import tensorflow as tf
-
-
-# https://www.youtube.com/watch?v=VnztChBw7Og
 
 
 @api_view(['GET'])
@@ -72,52 +67,32 @@ def createTeste(request):
 
 @api_view(['POST'])
 def uploadImage(request):
-    #data = request.get['foto']
-    #print(data)
-    print("Entrou na função")
-    # Numpy vai se chamado aqui e tratar a matriz e salvar ela.
+    class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+                   'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 
     image = Image.open(request.FILES['file'])
 
     image = ImageOps.grayscale(image)
-    print("Entrou na função2")
 
-    im2array = np.array(image)
-
-    im2array = (np.expand_dims(im2array, 0))
-    print("Entrou na função3")
-
-    data = im2array
-
-    #array.objects.create(foto = data['body'])
-    print("Entrou na função5")
-
-    #array.objects.create(boby = im2array['file'])
-
-    print(im2array)
-
-    #array.objects.create(arrayImagem = im2array)
-
-    return Response('Image uploaded')
-
-
-@api_view(['POST'])
-def uploadImage4(request):
-    image = Image.open(request.FILES['file'])
-
-    image = ImageOps.grayscale(image)
-
+    # retorne uma matriz ou qualquer sequência
     matrix = np.array(image)
 
+    # Expanda a forma de uma matriz. Insere um novo eixo que aparecerá na posição do eixo na forma de matriz expandida.
     matrix = (np.expand_dims(matrix, 0))
 
     model = tf.keras.models.load_model('api/modelo/my_model.h5')
 
     resultado = model.predict(matrix)
 
-    print(resultado)
+    # Retorna os índices dos valores máximos ao longo de um eixo.
+    predicted = class_names[np.argmax(resultado[0]) + 1]
 
-    return Response('Image feita')
+    arrays = array.objects.create(boby= predicted)
+
+    serializer = NoteSerializer(arrays, many=False)
+
+    # Isso não funciona aqui!
+    return Response(serializer.data)
 
 
 @api_view(['DELETE'])
